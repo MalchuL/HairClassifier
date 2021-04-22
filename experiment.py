@@ -72,7 +72,7 @@ class HairClassifier(pl.LightningModule):
 
     def validation_step(self, batch, batch_nb):
         image, labels = batch
-        result = self(image)
+        result = torch.sigmoid(self(image))
 
         pred = (result.squeeze(1) > self.hparams.threshold).int()
 
