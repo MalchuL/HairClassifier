@@ -1,0 +1,69 @@
+#### general settings
+
+gpu_ids: [ 0 ]
+
+
+class_to_id: # Map folder to class
+  longhair: 1
+  shorthair: 0
+
+#### network structures
+model:
+  model: EfficientNet # Registry keyword for models
+  model_name: efficientnet-b2
+  in_channels: 3
+  num_classes: 1
+
+threshold: 0.5
+
+#### datasets
+datasets:
+  train:
+    dataroot: ../../../dataset/train  # scripts runs from outputs folder
+    load_size: 256
+    n_workers: 4
+    batch_size: 32
+
+  val:
+    dataroot: ../../../dataset/val
+    load_size: 256
+    n_workers: 4
+    batch_size: 32
+
+
+
+#### path
+checkpoint_path: null
+
+#### training settings: learning rate scheme, loss
+train:
+  scheduler_params:
+    scheduler: ExponentialLR  # Registry keyword for scheduler name
+    gamma: 0.8608916593317348  # Reduces by 20
+
+
+  optimizer_params:
+    optimizer: AdamW  # Registry keyword for optimizer name
+    lr: !!float 2e-4
+    weight_decay: !!float 1e-4
+    betas: [ 0.9, 0.99 ]
+
+  loss:
+    criterion: BCEWithLogitsLoss  # Registry keyword for loss name
+
+  epoches: 20
+
+  log_freq: 100
+  val_freq: 1
+  val_steps_limit: 400
+
+
+  precision: 32
+  gradient_clip_val: 0
+
+exp_name: ''
+
+hydra:
+  run:
+    dir: ./outputs/${now:%Y-%m-%d}/HairClassifier_${now:%H-%M-%S}_${exp_name}_${model.model}_lr_${train.optimizer_params.lr}_iters_${train.epoches}_bs_${datasets.train.batch_size}
+
