@@ -66,7 +66,9 @@ class HairClassifier(pl.LightningModule):
         log = {'loss': loss, 'mean_class': labels.mean()}
         out = {}
 
-        return {'loss': loss, 'out': out, 'log': log, 'progress_bar': log}
+        self.log_dict(log, prog_bar=True)
+
+        return {'loss': loss, 'out': out}
 
     def validation_step(self, batch, batch_nb):
         image, labels = batch
