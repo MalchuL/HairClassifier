@@ -17,6 +17,7 @@ class MyImageDataset(ImageFolder):
 
     def __init__(self, root: str, transforms, folder_name_to_class):
         self.folder_name_to_class = folder_name_to_class
-        super().__init__(root, transform=transforms, loader=cv2.imread)
+        loader = lambda name: cv2.imread(name)[:,:,::-1]
+        super().__init__(root, transform=transforms, loader=loader)
 
 
