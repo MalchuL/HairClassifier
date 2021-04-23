@@ -26,6 +26,7 @@ class HairClassifier(pl.LightningModule):
         super(HairClassifier, self).__init__()
 
         self.hparams = hparams
+        self.num_classes = self.hparams.model.num_classes
 
         self.model = self.create_model()
         self.loss = self.create_loss()
@@ -76,10 +77,11 @@ class HairClassifier(pl.LightningModule):
         image, labels = batch
         result = self(image)
 
-        labels = labels.unsqueeze(1).type_as(image)
+        if self.num_classes == 1:
+            labels = labels.unsqueeze(1).type_as(image)
         loss = self.loss(result, labels)
 
-        log = {'loss': loss, 'mean_class': labels.mean()}
+        log = {'loss': loss}
         out = {'images': image, 'labels': labels}
 
         self.log_dict(log, prog_bar=True)
@@ -88,9 +90,13 @@ class HairClassifier(pl.LightningModule):
 
     def validation_step(self, batch, batch_nb):
         image, labels = batch
-        result = torch.sigmoid(self(image))
 
-        pred = (result.squeeze(1) > self.hparams.threshold).int()
+        if self.num_classes > 1:
+            pred = torch.argmax(self(image), dim=1)
+        else:
+            result = torch.sigmoid(self(image))
+
+            pred = (result.squeeze(1) > self.hparams.threshold).int()
 
         return {'pred': pred.detach().cpu().numpy(), 'target': labels.cpu().numpy()}
 

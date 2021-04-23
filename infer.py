@@ -24,6 +24,7 @@ parser.add_argument('--not_is_quant', action='store_true', help='if model is qua
 parser.add_argument('--eval_folder', help='path to eval folder with images')
 parser.add_argument('--output_data', default='./result.csv', help='path to output file')
 parser.add_argument('--dump_images', default=None, help='dump images for debug')
+parser.add_argument('--is_cpu', action='store_true')
 
 args = parser.parse_args()
 
@@ -36,16 +37,20 @@ if __name__ == '__main__':
     detector = MTCNN()
 
     config = OmegaConf.load('configs/main_config.yml')
+    num_classes = config.model.num_classes
     print('loading quantized model')
     if args.not_is_quant:
         model = HairClassifier.load_from_checkpoint(args.model_path, strict=False)
         model.eval()
+        if not args.is_cpu:
+            model = model.cuda()
     else:
         model = torch.jit.load(args.model_path)
         model.eval()
         for _ in range(10):
             model.dequant(
                 model(model.quant(torch.rand(1, 3, config.datasets.train.load_size, config.datasets.train.load_size))))
+
 
     print('loading complete')
 
@@ -62,7 +67,6 @@ if __name__ == '__main__':
     result = []
 
     for file_id, filename in tqdm(list(enumerate(filenames))):
-        print(f'file:{filename}')
 
         frame = cv2.imread(filename)
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -77,17 +81,24 @@ if __name__ == '__main__':
 
                 with torch.no_grad():
                     if args.not_is_quant:
+                        if not args.is_cpu:
+                            resized_crop = resized_crop.cuda()
                         res = model(resized_crop.unsqueeze(0)).squeeze()
                     else:
                         res = model.dequant(model(model.quant(resized_crop.unsqueeze(0)))).squeeze()
-                print(res)
-                class_img = int(res > 0)
+
+                res = res.detach().cpu()
+                if num_classes == 1:
+                    class_img = int(res > 0)
+                else:
+                    class_img = torch.argmax(res, 0)
                 if args.dump_images:
                     cv2.imwrite(str(output_path / f'file_{file_id}_res_{class_img}.png'),
                                 cv2.cvtColor(crop, cv2.COLOR_RGB2BGR))
                 break
+        print((filename, class_img))
         result.append((filename, class_img))
 
     with open(args.output_data, 'w') as f:
         for path, class_id in result:
-            f.write(f'{path} {class_id}\n')
+            f.write(f'{path},{class_id}\n')

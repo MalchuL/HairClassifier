@@ -11,7 +11,7 @@ class_to_id: # Map folder to class
 model:
   model: ShuffleNetV2 # Registry keyword for models
   in_channels: 3
-  num_classes: 1
+  num_classes: 2
 
 threshold: 0.5
 
@@ -43,17 +43,17 @@ train:
 
   optimizer_params:
     optimizer: AdamW  # Registry keyword for optimizer name
-    lr: !!float 1e-2
+    lr: !!float 2e-3
     weight_decay: 0.0001
     betas: [ 0.9, 0.99 ]
 
   loss:
-    criterion: BCEWithLogitsLoss  # Registry keyword for loss name
+    criterion: CrossEntropyLoss  # Registry keyword for loss name
 
   epoches: 100
 
   log_freq: 100
-  val_freq: 10
+  val_freq: 5
   val_steps_limit: 1.0
   img_log_freq: 10000
 
