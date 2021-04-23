@@ -32,4 +32,6 @@ To train model:
 ### Infer
 1. Install requirements `pip install -r requirements.txt`
 
-2. Run `python infer.py --eval_folder ./hair-val/`
+2. Run `python infer.py --eval_folder ./misc/hair-val/`
+
+   results.csv created in current directory

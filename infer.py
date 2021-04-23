@@ -20,7 +20,7 @@ FORMAT_FILES = ['.png', '.jpg', '.jpeg']
 parser = argparse.ArgumentParser('Detect faces on image')
 parser.add_argument('--model_path',
                     default='./pretrained/HairClassifier_04-06-12__ShuffleNetV2_lr_0.01_iters_1_bs_64/quant_model.pth')
-parser.add_argument('--not_is_quant', action='store_true', help='if model is quantized, pass this argument')
+parser.add_argument('--is_quant', action='store_true', help='if model is quantized, pass this argument')
 parser.add_argument('--eval_folder', help='path to eval folder with images')
 parser.add_argument('--output_data', default='./result.csv', help='path to output file')
 parser.add_argument('--dump_images', default=None, help='dump images for debug')
@@ -39,7 +39,7 @@ if __name__ == '__main__':
     config = OmegaConf.load('configs/main_config.yml')
     num_classes = config.model.num_classes
     print('loading quantized model')
-    if args.not_is_quant:
+    if not args.is_quant:
         model = HairClassifier.load_from_checkpoint(args.model_path, strict=False)
         model.eval()
         if not args.is_cpu:
@@ -82,7 +82,7 @@ if __name__ == '__main__':
 
                 infer_time = time.time()
                 with torch.no_grad():
-                    if args.not_is_quant:
+                    if not args.is_quant:
                         if not args.is_cpu:
                             resized_crop = resized_crop.cuda()
                         res = model(resized_crop.unsqueeze(0)).squeeze()

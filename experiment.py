@@ -94,13 +94,17 @@ class HairClassifier(pl.LightningModule):
         image, labels = batch
 
         if self.num_classes > 1:
-            pred = torch.argmax(self(image), dim=1)
+            scores = self(image)
+            pred = torch.argmax(scores, dim=1)
+
+            scores = torch.softmax(scores, 1)
         else:
             result = torch.sigmoid(self(image))
-
+            scores = result
             pred = (result.squeeze(1) > self.hparams.threshold).int()
 
-        return {'pred': pred.detach().cpu().numpy(), 'target': labels.cpu().numpy()}
+
+        return {'pred': pred.detach().cpu().numpy(), 'target': labels.cpu().numpy(), 'score': scores.detach().cpu().numpy()}
 
     def merge_dict(self, outputs):
         if not outputs:
@@ -118,10 +122,17 @@ class HairClassifier(pl.LightningModule):
     def validation_epoch_end(self, outputs):
         outputs = self.merge_dict(outputs)
 
-        pred, target = outputs['pred'], outputs['target']
+        pred, target, score = outputs['pred'], outputs['target'], outputs['score']
         f1_score = metrics.f1_score(target, pred)
 
+        try:
+            roc_auc = metrics.roc_auc_score(target, score[:, 1])
+        except Exception as e:
+            print(e)
+            roc_auc = 0
+
         self.log('f1_score', f1_score)
+        self.log('roc_auc', roc_auc)
         self.log('hp_metric', f1_score)
 
         confusion_matrix = metrics.confusion_matrix(target, pred)
@@ -130,7 +141,7 @@ class HairClassifier(pl.LightningModule):
                                                                      normalize=True,
                                                                      show=False, )), self.global_step)
 
-        return {'f1_score': f1_score}
+        return {'f1_score': f1_score, 'roc_auc': roc_auc}
 
     def get_transforms(self):
         return get_transform(self.hparams.datasets.train, True), get_transform(self.hparams.datasets.val, False)

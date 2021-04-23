@@ -16,11 +16,12 @@ def main(cfg):
 
     logger = TensorBoardLogger("logs")
     checkpoint_callback = ModelCheckpoint(
-        filename='model_{epoch}_{f1_score}',
+        filename='model_{epoch}_{f1_score}_{roc_auc}',
         verbose=True,
         monitor='f1_score',
         mode='max',
         save_last=True,
+        save_top_k=cfg.train.save_top_k,
         save_weights_only=cfg.train.save_weight_only
     )
 

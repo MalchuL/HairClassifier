@@ -72,6 +72,7 @@ def get_transform(opt, isTrain):
             A.Downscale(scale_min=0.6, scale_max=0.8, interpolation=cv2.INTER_CUBIC, p=often_prob),
         ], p=often_prob),
         A.OneOf([A.ChannelShuffle(), A.ChannelDropout()], p=medium_prob),
+        A.CoarseDropout(p=medium_prob, max_width=opt.load_size//8, max_height=opt.load_size//8),
         A.OneOf([
             A.ToGray(p=often_prob),
             A.ToSepia(p=very_rare_prob)
