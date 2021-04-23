@@ -22,7 +22,7 @@ FORMAT_FILES = ['.png', '.jpg', '.jpeg']
 
 parser = argparse.ArgumentParser('Detect faces on image')
 parser.add_argument('--model_path',
-                    default='./pretrained/shufflenetv2_epoch_39_f1_score=0.975.ckpt')
+                    default='./pretrained/shufflenetv2_epoch_94_f1_score=0.973.ckpt')
 parser.add_argument('--is_quant', action='store_true', help='if model is quantized, pass this argument')
 parser.add_argument('--eval_folder', help='path to eval folder with images')
 parser.add_argument('--output_data', default='./result.csv', help='path to output file')
