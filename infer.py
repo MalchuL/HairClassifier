@@ -39,7 +39,7 @@ if __name__ == '__main__':
 
     config = OmegaConf.load('configs/main_config.yml')
     num_classes = config.model.num_classes
-    print('loading quantized model')
+    print('loading model')
     if not args.is_quant:
         model = HairClassifier.load_from_checkpoint(args.model_path, strict=False)
         model.eval()
@@ -58,7 +58,7 @@ if __name__ == '__main__':
     images_folder = Path(args.eval_folder)
     filenames = []
 
-    # List of videos
+
     for ext in FORMAT_FILES:
         filenames.extend(images_folder.rglob('*' + ext))
     filenames = sorted(list(map(str, filenames)))

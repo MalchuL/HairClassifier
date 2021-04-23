@@ -3,9 +3,6 @@ import torch.nn as nn
 import torchvision.models as models
 
 import registry.registries as registry
-from efficientnet_pytorch import EfficientNet
-
-registry.Model(EfficientNet.from_pretrained, name='EfficientNet')
 
 
 def set_requires_grad(nets, requires_grad=False):
