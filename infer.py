@@ -20,7 +20,7 @@ FORMAT_FILES = ['.png', '.jpg', '.jpeg']
 parser = argparse.ArgumentParser('Detect faces on image')
 parser.add_argument('--model_path',
                     default='./pretrained/HairClassifier_04-06-12__ShuffleNetV2_lr_0.01_iters_1_bs_64/quant_model.pth')
-parser.add_argument('--is_quant', action='store_false', help='if model is quantized, pass this argument')
+parser.add_argument('--not_is_quant', action='store_true', help='if model is quantized, pass this argument')
 parser.add_argument('--eval_folder', help='path to eval folder with images')
 parser.add_argument('--output_data', default='./result.csv', help='path to output file')
 parser.add_argument('--dump_images', default=None, help='dump images for debug')
@@ -36,15 +36,16 @@ if __name__ == '__main__':
 
     config = OmegaConf.load('configs/main_config.yml')
     print('loading quantized model')
-    if args.is_quant:
+    if args.not_is_quant:
+        model = HairClassifier.load_from_checkpoint(args.model_path, strict=False)
+        model.eval()
+    else:
         model = torch.jit.load(args.model_path)
         model.eval()
         for _ in range(10):
             model.dequant(
                 model(model.quant(torch.rand(1, 3, config.datasets.train.load_size, config.datasets.train.load_size))))
-    else:
-        model = HairClassifier.load_from_checkpoint(args.model_path)
-        model.eval()
+
     print('loading complete')
 
     images_folder = Path(args.eval_folder)
@@ -73,11 +74,10 @@ if __name__ == '__main__':
             if crop.shape[0] > 0 and crop.shape[1] > 0:
                 resized_crop = transforms(frame)
 
-                if args.is_quant:
-                    res = model.dequant(model(model.quant(resized_crop.unsqueeze(0)))).squeeze()
-
-                else:
+                if args.not_is_quant:
                     res = model(resized_crop.unsqueeze(0)).squeeze()
+                else:
+                    res = model.dequant(model(model.quant(resized_crop.unsqueeze(0)))).squeeze()
                 print(res)
                 class_img = int(res > 0)
                 if args.dump_images:
