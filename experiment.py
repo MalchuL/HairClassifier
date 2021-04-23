@@ -29,6 +29,7 @@ class HairClassifier(pl.LightningModule):
         self.num_classes = self.hparams.model.num_classes
 
         self.model = self.create_model()
+        print(self.model)
         self.loss = self.create_loss()
 
     def create_loss(self):
@@ -74,6 +75,7 @@ class HairClassifier(pl.LightningModule):
         return outputs
 
     def training_step(self, batch, batch_idx):
+
         image, labels = batch
         result = self(image)
 

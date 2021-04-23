@@ -77,7 +77,7 @@ if __name__ == '__main__':
 
         for crop_id, crop in enumerate(face_crops):
             if crop.shape[0] > 0 and crop.shape[1] > 0:
-                resized_crop = transforms(frame)
+                resized_crop = transforms(crop)
 
                 with torch.no_grad():
                     if args.not_is_quant:
@@ -93,6 +93,7 @@ if __name__ == '__main__':
                 else:
                     class_img = torch.argmax(res, 0)
                 if args.dump_images:
+                    crop = (((resized_crop.permute(1,2,0) + 1) / 2) * 255).cpu().numpy().astype(np.uint8)
                     cv2.imwrite(str(output_path / f'file_{file_id}_res_{class_img}.png'),
                                 cv2.cvtColor(crop, cv2.COLOR_RGB2BGR))
                 break
