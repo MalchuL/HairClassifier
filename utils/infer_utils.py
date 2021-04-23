@@ -25,7 +25,7 @@ def square_box(box):
 
     return max(0, int(x1)),max(0, int(y1)), int(x2), int(y2)
 
-def crop_faces(img, detection, scale=1):
+def crop_faces(img, detection, scales=(1,)):
     faces = detection[0]
     if faces is None or len(faces) == 0:
         return []
@@ -33,13 +33,16 @@ def crop_faces(img, detection, scale=1):
     crops = []
 
     for i, face in enumerate(faces):
-        bbox = face
-        bbox = expand_bbox(bbox, scale)
-        bbox = square_box(bbox)
-        x1, y1, x2, y2 = max(0, bbox[0]), max(0, bbox[1]), bbox[2], bbox[3]
+        face_crops = []
+        for scale in scales:
+            bbox = face
+            bbox = expand_bbox(bbox, scale)
+            bbox = square_box(bbox)
+            x1, y1, x2, y2 = max(0, bbox[0]), max(0, bbox[1]), bbox[2], bbox[3]
 
 
-        face_crop = img[y1:y2, x1:x2, :]
-        crops.append(face_crop)
+            face_crop = img[y1:y2, x1:x2, :]
+            face_crops.append(face_crop)
+        crops.append(face_crops)
 
     return crops

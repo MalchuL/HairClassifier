@@ -13,7 +13,9 @@ from experiment import HairClassifier
 from transforms.transform import get_infer_transform
 from utils.infer_utils import crop_faces
 
-SCALE = 1.5
+SCALE = [1.2, 1.25, 1.3, 1.5]  # TTA
+
+
 MIN_CROP_SIZE = 80
 PATH_TO_IMAGES = "/home/malchul/work/projects/hair_classifier/val_images"
 FORMAT_FILES = ['.png', '.jpg', '.jpeg']
@@ -77,28 +79,33 @@ if __name__ == '__main__':
         face_crops = crop_faces(frame, detection, SCALE)
 
         infer_time = -1
-        for crop_id, crop in enumerate(face_crops):
-            if crop.shape[0] > MIN_CROP_SIZE and crop.shape[1] > MIN_CROP_SIZE:
-                resized_crop = transforms(crop)
+        for crop_id, crops in enumerate(face_crops):
+            #if crop.shape[0] > MIN_CROP_SIZE and crop.shape[1] > MIN_CROP_SIZE:
+
+                resized_crop = torch.stack([transforms(crop) for crop in crops])
 
                 infer_time = time.time()
                 with torch.no_grad():
                     if not args.is_quant:
                         if not args.is_cpu:
                             resized_crop = resized_crop.cuda()
-                        res = model(resized_crop.unsqueeze(0)).squeeze()
+                        res = model(resized_crop)
                     else:
-                        res = model.dequant(model(model.quant(resized_crop.unsqueeze(0)))).squeeze()
-                infer_time =  time.time() - infer_time
+                        res = model.dequant(model(model.quant(resized_crop)))
+                infer_time = time.time() - infer_time
 
                 res = res.detach().cpu()
+
+                # TTA aggregation
+                res, _ = res.max(0)
+
                 if num_classes == 1:
                     class_img = int(res > 0)
                 else:
                     class_img = int(torch.argmax(res, 0))
                 if args.dump_images:
-                    crop = (((resized_crop.permute(1,2,0) + 1) / 2) * 255).cpu().numpy().astype(np.uint8)
-                    cv2.imwrite(str(output_path / f'file_{file_id}_res_{class_img}.png'),
+                    crop = (((resized_crop[-1].permute(1,2,0) + 1) / 2) * 255).cpu().numpy().astype(np.uint8)
+                    cv2.imwrite(str(output_path / f'class_{class_img}_file_{file_id}.png'),
                                 cv2.cvtColor(crop, cv2.COLOR_RGB2BGR))
                 break
         print('result', (filename, class_img), 'classifier time', infer_time, 'ms')
