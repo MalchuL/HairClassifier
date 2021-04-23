@@ -8,3 +8,4 @@ tqdm==4.46.1
 matplotlib
 split-folders
 scikit-learn
+facenet-pytorch

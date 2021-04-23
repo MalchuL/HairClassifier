@@ -13,6 +13,7 @@ class ShuffleNetV2(nn.Module):
         super().__init__()
         assert in_channels == 3
         self.model = torch.hub.load('pytorch/vision:v0.9.0', 'shufflenet_v2_x0_5', pretrained=True)
+        
         self.model.fc = nn.Linear(self.model.fc.in_features, num_classes)
         self.model.train()
     def forward(self, x):

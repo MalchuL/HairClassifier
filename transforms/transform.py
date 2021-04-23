@@ -53,8 +53,8 @@ def get_transform(opt, isTrain):
     transform_list = []
     if isTrain:
         pre_process = [
-            A.ShiftScaleRotate(shift_limit=0.01, rotate_limit=45, scale_limit=0.5, interpolation=cv2.INTER_CUBIC,
-                               p=normal_prob),
+            A.ShiftScaleRotate(shift_limit=0.01, rotate_limit=45, scale_limit=(0.6,-0.5), interpolation=cv2.INTER_CUBIC,
+                               p=often_prob),
             A.SmallestMaxSize(opt.load_size, always_apply=True, interpolation=cv2.INTER_CUBIC),
             A.HorizontalFlip(p=0.5),
             A.RandomCrop(opt.load_size, opt.load_size, always_apply=True)]
@@ -70,7 +70,7 @@ def get_transform(opt, isTrain):
             A.MotionBlur(p=rare_prob),
             A.Downscale(scale_min=0.6, scale_max=0.8, interpolation=cv2.INTER_CUBIC, p=rare_prob),
         ], p=normal_prob),
-
+        A.OneOf([A.ChannelShuffle(), A.ChannelDropout], p=medium_prob),
         A.OneOf([
             A.ToGray(p=often_prob),
             A.ToSepia(p=very_rare_prob)

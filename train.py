@@ -2,8 +2,9 @@ import os.path
 
 import hydra
 import numpy as np
+import torch
 from pytorch_lightning import Trainer
-from pytorch_lightning.callbacks import ModelCheckpoint, LearningRateMonitor
+from pytorch_lightning.callbacks import ModelCheckpoint, LearningRateMonitor, QuantizationAwareTraining
 from pytorch_lightning.loggers import TensorBoardLogger
 
 from experiment import HairClassifier
@@ -19,11 +20,10 @@ def main(cfg):
         verbose=True,
         monitor='f1_score',
         mode='max',
-        save_last=True,
         save_weights_only=cfg.train.save_weight_only
     )
 
-    callbacks = [LearningRateMonitor('epoch'), checkpoint_callback]
+    callbacks = [LearningRateMonitor('epoch'), checkpoint_callback, QuantizationAwareTraining()]
 
     model = HairClassifier(cfg)
 
@@ -41,6 +41,8 @@ def main(cfg):
 
     trainer.fit(model)
 
+    print(model.quant)
+    torch.jit.save(torch.jit.script(model), "quant_model.pth")
 
 
 if __name__ == '__main__':

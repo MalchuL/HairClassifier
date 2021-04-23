@@ -38,7 +38,7 @@ checkpoint_path: null
 train:
   scheduler_params:
     scheduler: ExponentialLR  # Registry keyword for scheduler name
-    gamma: 0.9  # Reduces by 20
+    gamma: 0.9704869503929601  # Reduces by 20
 
 
   optimizer_params:
@@ -55,11 +55,14 @@ train:
   log_freq: 100
   val_freq: 1
   val_steps_limit: 400
+  img_log_freq: -1
+
 
   save_weight_only: True  # To decrease model size
 
   precision: 32
   gradient_clip_val: 0
+
 
 exp_name: ''
 

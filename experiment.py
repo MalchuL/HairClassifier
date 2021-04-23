@@ -3,6 +3,7 @@ from argparse import Namespace
 
 import numpy as np
 import pytorch_lightning as pl
+import torchvision
 
 from torch.utils.data import DataLoader, WeightedRandomSampler
 import torch.nn as nn
@@ -56,6 +57,21 @@ class HairClassifier(pl.LightningModule):
             with torch.no_grad():
                 self.trainer.optimizer_connector.update_learning_rates(interval='epoch')
 
+    def training_step_end(self, outputs):
+
+        out = outputs['out']
+        if len(out) > 0 and self.global_step % self.hparams.train.img_log_freq == 0 and self.hparams.train.img_log_freq > 0:
+            print('log image')
+
+            grid = torchvision.utils.make_grid(out['images'])
+
+            grid = grid * 0.5 + 0.5
+            grid = torch.clamp(grid, 0.0, 1.0)
+            self.logger.experiment.add_image('train_image', grid, self.global_step)
+
+
+        return outputs
+
     def training_step(self, batch, batch_idx):
         image, labels = batch
         result = self(image)
@@ -64,7 +80,7 @@ class HairClassifier(pl.LightningModule):
         loss = self.loss(result, labels)
 
         log = {'loss': loss, 'mean_class': labels.mean()}
-        out = {}
+        out = {'images': image, 'labels': labels}
 
         self.log_dict(log, prog_bar=True)
 
