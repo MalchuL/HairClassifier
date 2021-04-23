@@ -13,7 +13,7 @@ from experiment import HairClassifier
 from transforms.transform import get_infer_transform
 from utils.infer_utils import crop_faces
 
-SCALE = 1.3
+SCALE = 1.5
 MIN_CROP_SIZE = 80
 PATH_TO_IMAGES = "/home/malchul/work/projects/hair_classifier/val_images"
 FORMAT_FILES = ['.png', '.jpg', '.jpeg']
