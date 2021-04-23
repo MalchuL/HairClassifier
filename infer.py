@@ -14,12 +14,13 @@ from transforms.transform import get_infer_transform
 from utils.infer_utils import crop_faces
 
 SCALE = 1.3
+MIN_CROP_SIZE = 80
 PATH_TO_IMAGES = "/home/malchul/work/projects/hair_classifier/val_images"
 FORMAT_FILES = ['.png', '.jpg', '.jpeg']
 
 parser = argparse.ArgumentParser('Detect faces on image')
 parser.add_argument('--model_path',
-                    default='./pretrained/HairClassifier_04-06-12__ShuffleNetV2_lr_0.01_iters_1_bs_64/quant_model.pth')
+                    default='./pretrained/shufflenetv2_epoch_39_f1_score=0.975.ckpt')
 parser.add_argument('--is_quant', action='store_true', help='if model is quantized, pass this argument')
 parser.add_argument('--eval_folder', help='path to eval folder with images')
 parser.add_argument('--output_data', default='./result.csv', help='path to output file')
@@ -77,7 +78,7 @@ if __name__ == '__main__':
 
         infer_time = -1
         for crop_id, crop in enumerate(face_crops):
-            if crop.shape[0] > 0 and crop.shape[1] > 0:
+            if crop.shape[0] > MIN_CROP_SIZE and crop.shape[1] > MIN_CROP_SIZE:
                 resized_crop = transforms(crop)
 
                 infer_time = time.time()
