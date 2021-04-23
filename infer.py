@@ -6,7 +6,7 @@ import torch
 from facenet_pytorch.models.mtcnn import MTCNN
 from omegaconf import OmegaConf
 from tqdm import tqdm
-
+import time
 from pathlib import Path
 
 from experiment import HairClassifier
@@ -75,10 +75,12 @@ if __name__ == '__main__':
         class_img = -1
         face_crops = crop_faces(frame, detection, SCALE)
 
+        infer_time = -1
         for crop_id, crop in enumerate(face_crops):
             if crop.shape[0] > 0 and crop.shape[1] > 0:
                 resized_crop = transforms(crop)
 
+                infer_time = time.time()
                 with torch.no_grad():
                     if args.not_is_quant:
                         if not args.is_cpu:
@@ -86,18 +88,19 @@ if __name__ == '__main__':
                         res = model(resized_crop.unsqueeze(0)).squeeze()
                     else:
                         res = model.dequant(model(model.quant(resized_crop.unsqueeze(0)))).squeeze()
+                infer_time =  time.time() - infer_time
 
                 res = res.detach().cpu()
                 if num_classes == 1:
                     class_img = int(res > 0)
                 else:
-                    class_img = torch.argmax(res, 0)
+                    class_img = int(torch.argmax(res, 0))
                 if args.dump_images:
                     crop = (((resized_crop.permute(1,2,0) + 1) / 2) * 255).cpu().numpy().astype(np.uint8)
                     cv2.imwrite(str(output_path / f'file_{file_id}_res_{class_img}.png'),
                                 cv2.cvtColor(crop, cv2.COLOR_RGB2BGR))
                 break
-        print((filename, class_img))
+        print('result', (filename, class_img), 'classifier time', infer_time, 'ms')
         result.append((filename, class_img))
 
     with open(args.output_data, 'w') as f:
