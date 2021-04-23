@@ -41,7 +41,7 @@ def main(cfg):
 
     trainer.fit(model)
 
-    print(model.quant)
+    # Save jit model
     torch.jit.save(torch.jit.script(model), "quant_model.pth")
 
 

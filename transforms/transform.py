@@ -70,7 +70,7 @@ def get_transform(opt, isTrain):
             A.MotionBlur(p=rare_prob),
             A.Downscale(scale_min=0.6, scale_max=0.8, interpolation=cv2.INTER_CUBIC, p=rare_prob),
         ], p=normal_prob),
-        A.OneOf([A.ChannelShuffle(), A.ChannelDropout], p=medium_prob),
+        A.OneOf([A.ChannelShuffle(), A.ChannelDropout()], p=medium_prob),
         A.OneOf([
             A.ToGray(p=often_prob),
             A.ToSepia(p=very_rare_prob)

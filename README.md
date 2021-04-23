@@ -18,4 +18,7 @@ dataset/
             imgb.jpg
             ...
 
-Run splitfolders --ratio .8 .2 -- folder_with_images
+
+
+Run `pip install -r requirements.txt`
+Run `python infer.py --eval_folder ./hair-val/`

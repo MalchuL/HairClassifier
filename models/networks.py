@@ -13,7 +13,7 @@ class ShuffleNetV2(nn.Module):
         super().__init__()
         assert in_channels == 3
         self.model = torch.hub.load('pytorch/vision:v0.9.0', 'shufflenet_v2_x0_5', pretrained=True)
-        
+
         self.model.fc = nn.Linear(self.model.fc.in_features, num_classes)
         self.model.train()
     def forward(self, x):
@@ -21,4 +21,21 @@ class ShuffleNetV2(nn.Module):
 
         return x
 
+
+class MobileNetV3(nn.Module):
+
+    def __init__(self, in_channels, num_classes):
+        super().__init__()
+        assert in_channels == 3
+        self.model = torch.hub.load('pytorch/vision:v0.9.0', 'mobilenet_v3_small', pretrained=True)
+
+        self.model.classifier[-1] = nn.Linear(self.model.classifier[-1].in_features, num_classes)
+        self.model.train()
+
+    def forward(self, x):
+        x = self.model(x)
+
+        return x
+
 registry.Model(ShuffleNetV2)
+registry.Model(MobileNetV3)
