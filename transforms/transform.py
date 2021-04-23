@@ -53,10 +53,11 @@ def get_transform(opt, isTrain):
     transform_list = []
     if isTrain:
         pre_process = [
-            A.ShiftScaleRotate(shift_limit=0.01, rotate_limit=45, scale_limit=(0.6,-0.5), interpolation=cv2.INTER_CUBIC,
+            A.ShiftScaleRotate(shift_limit=0.1, rotate_limit=45, scale_limit=(0.6,-0.5), interpolation=cv2.INTER_CUBIC,
                                p=often_prob),
-            A.SmallestMaxSize(opt.load_size, always_apply=True, interpolation=cv2.INTER_CUBIC),
+            A.SmallestMaxSize((opt.load_size * 1.3), always_apply=True, interpolation=cv2.INTER_CUBIC),
             A.HorizontalFlip(p=0.5),
+
             A.RandomCrop(opt.load_size, opt.load_size, always_apply=True)]
     else:
         pre_process = [

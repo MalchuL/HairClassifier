@@ -54,8 +54,8 @@ train:
 
   log_freq: 100
   val_freq: 10
-  val_steps_limit: 400
-  img_log_freq: -1
+  val_steps_limit: 1.0
+  img_log_freq: 10000
 
 
   save_weight_only: True  # To decrease model size

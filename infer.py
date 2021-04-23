@@ -28,7 +28,8 @@ parser.add_argument('--dump_images', default=None, help='dump images for debug')
 args = parser.parse_args()
 
 if args.dump_images:
-    output_path = Path('out')
+    output_path = Path(args.dump_images)
+    output_path.mkdir(exist_ok=True)
 
 if __name__ == '__main__':
 
@@ -74,10 +75,11 @@ if __name__ == '__main__':
             if crop.shape[0] > 0 and crop.shape[1] > 0:
                 resized_crop = transforms(frame)
 
-                if args.not_is_quant:
-                    res = model(resized_crop.unsqueeze(0)).squeeze()
-                else:
-                    res = model.dequant(model(model.quant(resized_crop.unsqueeze(0)))).squeeze()
+                with torch.no_grad():
+                    if args.not_is_quant:
+                        res = model(resized_crop.unsqueeze(0)).squeeze()
+                    else:
+                        res = model.dequant(model(model.quant(resized_crop.unsqueeze(0)))).squeeze()
                 print(res)
                 class_img = int(res > 0)
                 if args.dump_images:

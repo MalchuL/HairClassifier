@@ -20,6 +20,7 @@ def main(cfg):
         verbose=True,
         monitor='f1_score',
         mode='max',
+        save_last=True,
         save_weights_only=cfg.train.save_weight_only
     )
 
